@@ -1,0 +1,51 @@
+version: "3.8"
+services:
+  springboot-service:
+    build: ./spring-boot-service
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGO_HOST=mongodb       
+      - MONGO_PORT=27017
+      - MONGO_DB=userdb
+    depends_on:
+      - mongodb
+
+  flask-service:
+    build: ./flask-service
+    ports:
+      - "5000:5000"
+    environment:
+      - MYSQL_HOST=mysql-flask
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=productdb
+      - MYSQL_USER=flaskuser
+      - MYSQL_PASSWORD=flaskpass
+    depends_on:
+      - mysql-flask
+
+  mongodb:
+    image: mongo:6.0
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+  
+  mysql-flask:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: productdb
+      MYSQL_USER: flaskuser
+      MYSQL_PASSWORD: flaskpass
+    volumes:
+      - mysql-flask-data:/var/lib/mysql
+    ports:
+      - "3308:3306"
+
+volumes:
+  mongo-data:
+  mysql-flask-data:
+

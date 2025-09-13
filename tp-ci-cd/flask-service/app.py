@@ -19,11 +19,11 @@ if os.environ.get('TESTING') == 'True':
 else:
     # Configuration normale MySQL
     db_config = {
-        'host': '192.168.1.48',
-        'port': 3306,
-        'database': 'productdb',
-        'user': 'flaskuser',
-        'password': 'flaskpass'
+        'host': os.getenv('MYSQL_HOST', 'mysql-container'),
+        'port': int(os.getenv('MYSQL_PORT', 3306)),
+        'database': os.getenv('MYSQL_DATABASE', 'productdb'),
+        'user': os.getenv('MYSQL_USER', 'flaskuser'),
+        'password': os.getenv('MYSQL_PASSWORD', 'flaskpass')
     }
     # Import pour MySQL
     from mysql.connector import Error
