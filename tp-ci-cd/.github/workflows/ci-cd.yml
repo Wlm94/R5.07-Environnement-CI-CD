@@ -1,0 +1,56 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python for Flask tests
+      run: |
+        cd flask-service
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Test Flask service
+      run: |
+        cd flask-service
+        python -m pytest tests/ -v
+
+    - name: Set up Java for Spring Boot
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build Spring Boot application
+      run: |
+        cd spring-boot-service
+        ./mvnw clean package -DskipTests
+
+    - name: Test Spring Boot service
+      run: |
+        cd spring-boot-service
+        ./mvnw test -q
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Spring Boot image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/springboot-app ./spring-boot-service
+        docker push ${{ secrets.DOCKER_USERNAME }}/springboot-app
+
+    - name: Build and push Flask image
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/flask-app ./flask-service
+        docker push ${{ secrets.DOCKER_USERNAME }}/flask-app
